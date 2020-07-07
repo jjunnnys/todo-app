@@ -21,12 +21,14 @@
       margin-left: 0.5rem;
       flex: 1;
     }
-    &:checked {
+    // .checkbox.checked 와 같은 말
+    &.checked {
       svg {
         color: #51cf66;
       }
       .text {
         color: #adb5db;
+        text-decoration: line-through;
       }
     }
   }
