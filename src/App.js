@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useReducer, useRef, useCallback } from 'react';
 import TodoTemplate from './components/TodoTemplate';
 import TodoInsert from './components/TodoInsert';
 import TodoList from './components/TodoList';
@@ -15,8 +15,26 @@ function createBulkTodos() {
   return array;
 }
 
+function todoReducer(todos, action) {
+  switch (action.type) {
+    case 'INSERT': // 추가
+      // {type: 'INSERT', todo: {id:1 , text:'todo', ,checked: false}}
+      return todos.concat(action.todo);
+    case 'REMOVE': // 제거
+      // {type: 'REMOVE', id: 1}
+      return todos.filter((todo) => todo.id !== action.id);
+    case 'TOGGLE': // 토글
+      // {type: 'REMOVE', id: 1}
+      return todos.map((todo) =>
+        todo.id === action.id ? { ...todo, checked: !todo.checked } : todo,
+      );
+    default:
+      return todos;
+  }
+}
+
 function App() {
-  const [todos, setTodos] = useState(createBulkTodos);
+  const [todos, dispatch] = useReducer(todoReducer, undefined, createBulkTodos);
 
   const nextId = useRef(5001);
 
@@ -27,24 +45,18 @@ function App() {
         text,
         checked: false,
       };
-      setTodos((todos) => todos.concat(todo));
+      dispatch({ type: 'INSERT', todo });
       nextId.current += 1;
     },
     [], // 함수형 업데이트를 쓰면 useCallback의 두 번째 파라미터의 배열에 값을 안 넣을 수 있음
   );
 
   const onRemove = useCallback((id) => {
-    setTodos((todos) => todos.filter((todo) => todo.id !== id)); // TodoList에서 props로 받아온 id 값이 현재 선택한 id값과 다른 것들만 따로 배열을 만듬
+    dispatch({ type: 'REMOVE', id });
   }, []);
 
   const onToggle = useCallback((id) => {
-    setTodos(
-      // map 함수에선 {} 대신 ()를 쓴다....?
-      (todos) =>
-        todos.map((todo) =>
-          todo.id === id ? { ...todo, checked: !todo.checked } : todo,
-        ),
-    );
+    dispatch({ type: 'TOGGLE', id });
   }, []);
 
   return (
